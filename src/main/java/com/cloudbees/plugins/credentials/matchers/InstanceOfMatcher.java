@@ -26,6 +26,9 @@ package com.cloudbees.plugins.credentials.matchers;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * Matches credentials that implement a specific type.
@@ -39,6 +42,9 @@ public class InstanceOfMatcher implements CredentialsMatcher, CredentialsMatcher
      * @since 2.1.0
      */
     private static final long serialVersionUID = 7841840317353807524L;
+
+    private static final Logger LOGGER = Logger.getLogger(InstanceOfMatcher.class.getName());
+
     /**
      * The type that the credentials must implement
      */
@@ -59,6 +65,8 @@ public class InstanceOfMatcher implements CredentialsMatcher, CredentialsMatcher
      * {@inheritDoc}
      */
     public boolean matches(@NonNull Credentials item) {
+        String self = toString();
+        LOGGER.log(WARNING, "{0} matches(item {1}): {2}", new Object[] {self, item.toString(), clazz.isInstance(item)});
         return clazz.isInstance(item);
     }
 
@@ -67,7 +75,10 @@ public class InstanceOfMatcher implements CredentialsMatcher, CredentialsMatcher
      */
     @Override
     public String describe() {
-        return String.format("(instanceof %s)", clazz.getName());
+        String self = toString();
+        String description = String.format("(instanceof %s)", clazz.getName());
+        LOGGER.log(WARNING, "{0}.describe: {1}", new Object[]{toString(), description});
+        return description;
     }
 
     /**

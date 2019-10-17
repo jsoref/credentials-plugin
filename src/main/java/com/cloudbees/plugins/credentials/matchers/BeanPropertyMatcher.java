@@ -35,6 +35,9 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -48,6 +51,9 @@ public class BeanPropertyMatcher<T extends Serializable> implements CredentialsM
      * Standardize serialization.
      */
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOGGER = Logger.getLogger(BeanPropertyMatcher.class.getName());
+
     /**
      * The property name.
      */
@@ -75,25 +81,24 @@ public class BeanPropertyMatcher<T extends Serializable> implements CredentialsM
      */
     @Override
     public String describe() {
+        String description;
         if (expected == null) {
-            return String.format("(%s == null)", name);
+            description = String.format("(%s == null)", name);
+        } else if (expected instanceof String) {
+            description = String.format("(%s == \"%s\")", name, StringEscapeUtils.escapeJava((String) expected));
+        } else if (expected instanceof Character) {
+            description = String.format("(%s == \'%s\')", name, StringEscapeUtils.escapeJava(expected.toString()));
+        } else if (expected instanceof Number) {
+            description = String.format("(%s == %s)", name, expected);
+        } else if (expected instanceof Boolean) {
+            description = expected.toString();
+        } else if (expected instanceof Enum) {
+            description = String.format("(%s == %s.%s)", name, ((Enum) expected).getDeclaringClass().getName(), ((Enum) expected).name());
+        } else {
+            description = null; // we cannot describe the expected value in CQL
         }
-        if (expected instanceof String) {
-            return String.format("(%s == \"%s\")", name, StringEscapeUtils.escapeJava((String) expected));
-        }
-        if (expected instanceof Character) {
-            return String.format("(%s == \'%s\')", name, StringEscapeUtils.escapeJava(expected.toString()));
-        }
-        if (expected instanceof Number) {
-            return String.format("(%s == %s)", name, expected);
-        }
-        if (expected instanceof Boolean) {
-            return expected.toString();
-        }
-        if (expected instanceof Enum) {
-            return String.format("(%s == %s.%s)", name, ((Enum) expected).getDeclaringClass().getName(), ((Enum) expected).name());
-        }
-        return null; // we cannot describe the expected value in CQL
+        LOGGER.log(WARNING, "{0}.describe: {1}", new Object[]{toString(), description});
+        return description;
     }
 
     /**
@@ -101,24 +106,32 @@ public class BeanPropertyMatcher<T extends Serializable> implements CredentialsM
      */
     @Override
     public boolean matches(@NonNull Credentials item) {
+        String self = toString();
+        LOGGER.log(FINEST, "{0} matches(item {1})", new Object[] {self, item.toString()});
+
         try {
             BeanInfo beanInfo = Introspector.getBeanInfo(item.getClass());
             for (PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
                 if (name.equals(pd.getName())) {
                     Method readMethod = pd.getReadMethod();
                     if (readMethod == null) {
+                        LOGGER.log(FINE, "{0} matches(item {1}) readMethod = null -> false", new Object[] {self, item.toString()});
                         return false; // we cannot read it therefore it cannot be a match
                     }
                     try {
                         Object actual = readMethod.invoke(item);
+                        LOGGER.log(FINE, "{0} matches(item {1}) expected {2}: readMethod: {3}; equals: {4}", new Object[] {self, item.toString(), expected, actual, Objects.equals(expected, actual)});
                         return Objects.equals(expected, actual);
                     } catch (IllegalAccessException | InvocationTargetException e) {
+                        LOGGER.log(WARNING, "{0} matches(item {1}) exception {2}", new Object[] {self, item.toString(), e});
                         return false; // if we cannot access it then it's not a match
                     }
                 }
             }
+            LOGGER.log(WARNING, "{0} matches(item {1}): false", new Object[] {self, item.toString()});
             return false; // if there is no corresponding property then it cannot be a match
         } catch (IntrospectionException e) {
+            LOGGER.log(WARNING, "{0} matches(item {1}): exception {2}", new Object[] {self, item.toString(), e});
             return false; // if we cannot introspect it then it cannot be a match
         }
     }

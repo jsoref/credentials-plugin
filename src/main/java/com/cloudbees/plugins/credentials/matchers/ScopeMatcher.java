@@ -33,6 +33,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * Matches credentials that are {@link IdCredentials} and have the specified {@link CredentialsScope}(s).
@@ -46,6 +49,9 @@ public class ScopeMatcher implements CredentialsMatcher, CredentialsMatcher.CQL 
      * @since 2.1.0
      */
     private static final long serialVersionUID = -7786779595366393177L;
+
+    private static final Logger LOGGER = Logger.getLogger(ScopeMatcher.class.getName());
+
     /**
      * The scopes to match.
      */
@@ -84,6 +90,8 @@ public class ScopeMatcher implements CredentialsMatcher, CredentialsMatcher.CQL 
      * {@inheritDoc}
      */
     public boolean matches(@NonNull Credentials item) {
+        String self = toString();
+        LOGGER.log(WARNING, "{0} matches(item {1}): {2}", new Object[] {self, item.toString(), scopes.contains(item.getScope())});
         return scopes.contains(item.getScope());
     }
 
@@ -117,6 +125,7 @@ public class ScopeMatcher implements CredentialsMatcher, CredentialsMatcher.CQL 
             }
         }
         sb.append(")");
+        LOGGER.log(WARNING, "{0}.describe {1}", new Object[]{toString(), sb.toString()});
         return sb.toString();
     }
 

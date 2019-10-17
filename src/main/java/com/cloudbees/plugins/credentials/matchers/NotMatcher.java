@@ -26,6 +26,9 @@ package com.cloudbees.plugins.credentials.matchers;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * Inverts a matcher.
@@ -39,6 +42,9 @@ public class NotMatcher implements CredentialsMatcher, CredentialsMatcher.CQL {
      * @since 2.1.0
      */
     private static final long serialVersionUID = 3301127941013284754L;
+
+    private static final Logger LOGGER = Logger.getLogger(NotMatcher.class.getName());
+
     /**
      * The matchers to match.
      */
@@ -59,6 +65,8 @@ public class NotMatcher implements CredentialsMatcher, CredentialsMatcher.CQL {
      * {@inheritDoc}
      */
     public boolean matches(@NonNull Credentials item) {
+        String self = toString();
+        LOGGER.log(FINEST, "{0} matches(item {1}): {2}", new Object[] {self, item.toString(), !matcher.matches(item)});
         return !matcher.matches(item);
     }
 
@@ -68,7 +76,9 @@ public class NotMatcher implements CredentialsMatcher, CredentialsMatcher.CQL {
     @Override
     public String describe() {
         String description = matcher instanceof CQL ? ((CQL) matcher).describe() : null;
-        return description == null ? null : description.startsWith("(") && description.endsWith(")") ? "!" + description : String.format("!(%s)", description);
+        description = description == null ? null : description.startsWith("(") && description.endsWith(")") ? "!" + description : String.format("!(%s)", description);
+        LOGGER.log(WARNING, "{0}.describe: {1}", new Object[]{toString(), description});
+        return description;
     }
 
     /**

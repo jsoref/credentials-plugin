@@ -28,6 +28,9 @@ import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import com.cloudbees.plugins.credentials.common.IdCredentials;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.StringEscapeUtils;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * Matches credentials that are {@link IdCredentials} and have the specified {@link IdCredentials#getId()}.
@@ -41,6 +44,8 @@ public class IdMatcher implements CredentialsMatcher, CredentialsMatcher.CQL {
      * @since 2.1.0
      */
     private static final long serialVersionUID = -2400504567993839126L;
+
+    private static final Logger LOGGER = Logger.getLogger(IdMatcher.class.getName());
     /**
      * The id to match.
      */
@@ -61,6 +66,10 @@ public class IdMatcher implements CredentialsMatcher, CredentialsMatcher.CQL {
      * {@inheritDoc}
      */
     public boolean matches(@NonNull Credentials item) {
+        String self = toString();
+        LOGGER.log(WARNING, "{0} [item {1}, item instanceof IdCredentials {2}, id.equals(((IdCredentials) item).getId()) {3}]",
+                new Object[]{self, item.toString(), item instanceof IdCredentials, id.equals(((IdCredentials) item).getId())});
+
         return item instanceof IdCredentials && id.equals(((IdCredentials) item).getId());
     }
 
@@ -69,6 +78,9 @@ public class IdMatcher implements CredentialsMatcher, CredentialsMatcher.CQL {
      */
     @Override
     public String describe() {
+        String self = toString();
+        LOGGER.log(WARNING, "{0} describe: {1}",
+                new Object[]{self, String.format("(id == \"%s\")", StringEscapeUtils.escapeJava(id))});
         return String.format("(id == \"%s\")", StringEscapeUtils.escapeJava(id));
     }
 

@@ -25,9 +25,13 @@ package com.cloudbees.plugins.credentials.matchers;
 
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsMatcher;
+import com.cloudbees.plugins.credentials.common.IdCredentials;
 import com.cloudbees.plugins.credentials.common.UsernameCredentials;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.StringEscapeUtils;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * Matches credentials that are {@link UsernameCredentials} and have the specified {@link
@@ -42,6 +46,9 @@ public class UsernameMatcher implements CredentialsMatcher, CredentialsMatcher.C
      * @since 2.1.0
      */
     private static final long serialVersionUID = -2166795904091485580L;
+
+    private static final Logger LOGGER = Logger.getLogger(UsernameMatcher.class.getName());
+
     /**
      * The username to match.
      */
@@ -62,6 +69,9 @@ public class UsernameMatcher implements CredentialsMatcher, CredentialsMatcher.C
      * {@inheritDoc}
      */
     public boolean matches(@NonNull Credentials item) {
+        String self = toString();
+        LOGGER.log(WARNING, "{0} [item {1}, item instanceof UsernameCredentials {2}, username.equals(((IdCredentials) item).getUsername()) {3}]",
+                new Object[]{self, item.toString(), item instanceof UsernameCredentials, username.equals(((UsernameCredentials) item).getUsername())});
         return item instanceof UsernameCredentials && username.equals(((UsernameCredentials) item).getUsername());
     }
 
@@ -70,6 +80,9 @@ public class UsernameMatcher implements CredentialsMatcher, CredentialsMatcher.C
      */
     @Override
     public String describe() {
+        String self = toString();
+        LOGGER.log(WARNING, "{0} describe: {1}",
+                new Object[]{self, String.format("(username == \"%s\")", StringEscapeUtils.escapeJava(username))});
         return String.format("(username == \"%s\")", StringEscapeUtils.escapeJava(username));
     }
 

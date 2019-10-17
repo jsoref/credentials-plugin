@@ -30,6 +30,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * Matches all of the supplied matchers.
@@ -43,6 +46,8 @@ public class AllOfMatcher implements CredentialsMatcher, CredentialsMatcher.CQL 
      * @since 2.1.0
      */
     private static final long serialVersionUID = 2161005681083022432L;
+
+    private static final Logger LOGGER = Logger.getLogger(AllOfMatcher.class.getName());
 
     /**
      * The matchers to match.
@@ -64,11 +69,17 @@ public class AllOfMatcher implements CredentialsMatcher, CredentialsMatcher.CQL 
      * {@inheritDoc}
      */
     public boolean matches(@NonNull Credentials item) {
+        String self = toString();
+        LOGGER.log(FINEST, "{0} matches(item {1})", new Object[] {self, item.toString()});
+
         for (CredentialsMatcher matcher : matchers) {
+            LOGGER.log(FINEST, "{0} matches(item {1}) matcher {2}", new Object[] {self, item.toString(), matcher.toString()});
             if (!matcher.matches(item)) {
+                LOGGER.log(FINE, "{0} matches(item {1}) matcher {2}: false", new Object[] {self, item.toString(), matcher.toString()});
                 return false;
             }
         }
+        LOGGER.log(WARNING, "{0} matches(item {1}): true", new Object[] {self, item.toString()});
         return true;
     }
 
@@ -96,6 +107,7 @@ public class AllOfMatcher implements CredentialsMatcher, CredentialsMatcher.CQL 
             sb.append(description);
         }
         sb.append(")");
+        LOGGER.log(WARNING, "{0}.describe {1}", new Object[]{toString(), sb.toString()});
         return sb.toString();
     }
 

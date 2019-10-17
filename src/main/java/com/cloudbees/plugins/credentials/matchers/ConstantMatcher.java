@@ -26,6 +26,9 @@ package com.cloudbees.plugins.credentials.matchers;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * Matches credentials based on a constant result.
@@ -39,6 +42,8 @@ public class ConstantMatcher implements CredentialsMatcher, CredentialsMatcher.C
      * @since 2.1.0
      */
     private static final long serialVersionUID = 8270819649776908382L;
+
+    private static final Logger LOGGER = Logger.getLogger(ConstantMatcher.class.getName());
     /**
      * Whether to match.
      */
@@ -65,6 +70,8 @@ public class ConstantMatcher implements CredentialsMatcher, CredentialsMatcher.C
      */
     @Override
     public String describe() {
+        String self = toString();
+        LOGGER.log(WARNING, "{0} describe: {0}", new Object[]{self, Boolean.toString(match)});
         return Boolean.toString(match);
     }
 
